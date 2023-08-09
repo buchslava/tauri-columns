@@ -101,7 +101,7 @@ pub struct Game {
 
 // ...
 
-fn verticalMatching(board: BoardType, ma: &mut MatchingType) {
+fn verticalMatching(board: &BoardType, ma: &mut MatchingType) {
     let columnsQty = board[0].len();
     let rowsQty = board.len();
 
@@ -141,7 +141,7 @@ fn verticalMatching(board: BoardType, ma: &mut MatchingType) {
     }
 }
 
-fn horizontalMatching(board: BoardType, ma: &mut MatchingType) {
+fn horizontalMatching(board: &BoardType, ma: &mut MatchingType) {
     let columnsQty = board[0].len();
     let rowsQty = board.len();
 
@@ -189,7 +189,7 @@ fn diagonalMatch(board: &BoardType, rowDirect: i8, row: usize, colDirect: i8, co
     );
 }
 
-fn diagonalColumnRightToLeftMatching(board: BoardType, ma: &mut MatchingType) {
+fn diagonalColumnRightToLeftMatching(board: &BoardType, ma: &mut MatchingType) {
     let columnsQty = board[0].len();
     let rowsQty = board.len();
 
@@ -239,9 +239,9 @@ fn matching(game: Game, level: String, mark: bool, customBoard: Option<BoardType
     let mut board: BoardType = customBoard.unwrap_or(game.board);
     let mut ma: MatchingType = [[false; WIDTH as usize]; HEIGHT as usize];
 
-    verticalMatching(board.clone(), &mut ma);
-    horizontalMatching(board.clone(), &mut ma);
-    diagonalColumnRightToLeftMatching(board.clone(), &mut ma);
+    verticalMatching(&board, &mut ma);
+    horizontalMatching(&board, &mut ma);
+    diagonalColumnRightToLeftMatching(&board, &mut ma);
 
     return false;
 }
