@@ -264,9 +264,8 @@ export default component$(() => {
         level: store.level,
         mark: true,
       });
-      // console.log(123, r);
-      // // const matched = r[0] as boolean;
-      // // game.board = r[1];
+      // const matched = r[0] as boolean;
+      // game.board = r[1];
       // console.log(123, matched, game.board);
       console.log(123, r);
 

@@ -117,16 +117,16 @@ pub struct Game {
 
 // ...
 
-fn verticalMatching(board: &BoardType, ma: &mut MatchingType) {
+fn horizontalMatching(board: &BoardType, ma: &mut MatchingType) {
     let columnsQty = board[0].len();
     let rowsQty = board.len();
-    let mut row: usize = 0;
-    
-    while row < HEIGHT {
+    let mut row = 0;
+
+    while row < rowsQty {
         let mut matchStartIndex: i8 = -1;
 
-        let mut col: usize = 0;
-        while col < WIDTH {
+        let mut col = 0;
+        while col < columnsQty {
             let mut isMatch = false;
             if
                 (col as i8) - 1 >= 0 &&
@@ -138,7 +138,7 @@ fn verticalMatching(board: &BoardType, ma: &mut MatchingType) {
             }
             if isMatch == true {
                 if matchStartIndex == -1 {
-                    matchStartIndex = (col - 1) as i8;
+                    matchStartIndex = (col as i8) - 1;
                 } else if col == columnsQty - 1 && col - (matchStartIndex as usize) >= 2 {
                     for c in matchStartIndex as usize..col + 1 {
                         ma[row][c] = true;
@@ -146,6 +146,7 @@ fn verticalMatching(board: &BoardType, ma: &mut MatchingType) {
                 }
             } else {
                 if (matchStartIndex as usize) >= 0 && (col as i8) - matchStartIndex > 2 {
+                    // if (matchStartIndex as usize) >= 0 && (col as i8) - matchStartIndex >= 1 {
                     for c in matchStartIndex as usize..col {
                         ma[row][c] = true;
                     }
@@ -158,17 +159,19 @@ fn verticalMatching(board: &BoardType, ma: &mut MatchingType) {
     }
 }
 
-fn horizontalMatching(board: &BoardType, ma: &mut MatchingType) {
+fn verticalMatching(board: &BoardType, ma: &mut MatchingType) {
     let columnsQty = board[0].len();
     let rowsQty = board.len();
 
-    let mut row = 0;
-    while row < HEIGHT {
+    let mut col = 0;
+
+    while col < columnsQty {
         let mut matchStartIndex: i8 = -1;
 
-        let mut col = 0;
-        while col < WIDTH {
+        let mut row = 0;
+        while row < rowsQty {
             let mut isMatch = false;
+
             if
                 (row as i8) - 1 >= 0 &&
                 board[row][col] == board[row - 1][col] &&
@@ -179,7 +182,7 @@ fn horizontalMatching(board: &BoardType, ma: &mut MatchingType) {
             }
             if isMatch == true {
                 if matchStartIndex == -1 {
-                    matchStartIndex = (row - 1) as i8;
+                    matchStartIndex = (row as i8) - 1;
                 } else if row == rowsQty - 1 && row - (matchStartIndex as usize) >= 2 {
                     for r in matchStartIndex as usize..row + 1 {
                         ma[r][col] = true;
@@ -187,15 +190,17 @@ fn horizontalMatching(board: &BoardType, ma: &mut MatchingType) {
                 }
             } else {
                 if matchStartIndex >= 0 && row - (matchStartIndex as usize) > 2 {
+                    // if matchStartIndex >= 0 && row - (matchStartIndex as usize) >= 1 {
                     for r in matchStartIndex as usize..row {
                         ma[r][col] = true;
                     }
                 }
                 matchStartIndex = -1;
             }
-            col = col + 1;
+
+            row = row + 1;
         }
-        row = row + 1;
+        col = col + 1;
     }
     // println!("{:?}", ma);
 }
@@ -205,22 +210,19 @@ fn diagonalMatch(board: &BoardType, rowDirect: i8, row: usize, colDirect: i8, co
     let rowsQty = board.len();
 
     if
-        row >= 0 &&
-        row < rowsQty &&
-        col >= 0 &&
-        col < columnsQty &&
         (row as i8) + rowDirect >= 0 &&
         (row as i8) + rowDirect < (rowsQty as i8) &&
         (col as i8) + colDirect >= 0 &&
         (col as i8) + colDirect < (columnsQty as i8)
     {
-        return false;
+        return (
+            board[row][col] ==
+                board[((row as i8) + rowDirect) as usize][((col as i8) + colDirect) as usize] &&
+            board[row][col] != w &&
+            !shouldDisappear(board[row][col].to_string())
+        );
     }
-    return (
-        board[row][col] == board[row + (rowDirect as usize)][col + (colDirect as usize)] &&
-        board[row][col] != w &&
-        !shouldDisappear(board[row][col].to_string())
-    );
+    return false;
 }
 
 fn diagonalColumnRightToLeftMatching(board: &BoardType, ma: &mut MatchingType) {
@@ -235,14 +237,14 @@ fn diagonalColumnRightToLeftMatching(board: &BoardType, ma: &mut MatchingType) {
         let mut col: i8 = (xCol as i8) - 1;
 
         while col >= 0 {
-            if diagonalMatch(&board, -1, row as usize, 1, col as usize) == true {
+            if diagonalMatch(&board, -1, row as usize, 1, col as usize) {
                 if startRow == -1 && startCol == -1 {
                     startRow = (row as i8) - 1;
                     startCol = (col as i8) + 1;
                 } else if col == 0 && row - startRow >= 2 {
                     let mut r = startRow as usize;
                     let mut c = startCol as usize;
-                    while r <= row.try_into().unwrap() {
+                    while r <= (row as usize) {
                         ma[r][c] = true;
                         r = r + 1;
                         c = c - 1;
@@ -280,14 +282,14 @@ fn diagonalRowRightToLeftMatching(board: &BoardType, ma: &mut MatchingType) {
         let mut col: i8 = (columnsQty as i8) - 2;
 
         while row < (rowsQty as i8) && col >= 0 {
-            if diagonalMatch(&board, -1, row as usize, 1, col as usize) == true {
+            if diagonalMatch(&board, -1, row as usize, 1, col as usize) {
                 if startRow == -1 && startCol == -1 {
                     startRow = (row as i8) - 1;
                     startCol = (col as i8) + 1;
                 } else if (row == (rowsQty as i8) - 1 || col == 0) && row - startRow >= 2 {
                     let mut r = startRow;
                     let mut c = startCol;
-                    while r <= row.try_into().unwrap() {
+                    while r <= (row as i8) {
                         ma[r as usize][c as usize] = true;
                         r = r + 1;
                         c = c - 1;
@@ -297,7 +299,7 @@ fn diagonalRowRightToLeftMatching(board: &BoardType, ma: &mut MatchingType) {
                 if startRow >= 0 && startCol >= 0 && row - startRow > 2 {
                     let mut r = startRow;
                     let mut c = startCol;
-                    while r < row.try_into().unwrap() {
+                    while r < (row as i8) {
                         ma[r as usize][c as usize] = true;
                         r = r + 1;
                         c = c - 1;
@@ -325,7 +327,7 @@ fn diagonalColumnLeftToRightMatching(board: &BoardType, ma: &mut MatchingType) {
         let mut row = 1;
 
         while col < columnsQty && row < rowsQty {
-            if diagonalMatch(&board, -1, row as usize, -1, col as usize) == true {
+            if diagonalMatch(&board, -1, row as usize, -1, col as usize) {
                 if startRow == -1 && startCol == -1 {
                     startRow = (row as i8) - 1;
                     startCol = (col as i8) - 1;
@@ -336,7 +338,7 @@ fn diagonalColumnLeftToRightMatching(board: &BoardType, ma: &mut MatchingType) {
                     let mut r = startRow;
                     let mut c = startCol;
 
-                    while r <= row.try_into().unwrap() {
+                    while r <= (row as i8) {
                         ma[r as usize][c as usize] = true;
                         r = r + 1;
                         c = c + 1;
@@ -346,7 +348,7 @@ fn diagonalColumnLeftToRightMatching(board: &BoardType, ma: &mut MatchingType) {
                 if startRow >= 0 && startCol >= 0 && row - (startRow as usize) > 2 {
                     let mut r = startRow;
                     let mut c = startCol;
-                    while r < row.try_into().unwrap() {
+                    while r < (row as i8) {
                         ma[r as usize][c as usize] = true;
                         r = r + 1;
                         c = c + 1;
@@ -374,7 +376,7 @@ fn diagonalRowLeftToRightMatching(board: &BoardType, ma: &mut MatchingType) {
         let mut col = 1;
 
         while row < rowsQty && col < columnsQty {
-            if diagonalMatch(&board, -1, row as usize, -1, col as usize) == true {
+            if diagonalMatch(&board, -1, row as usize, -1, col as usize) {
                 if startRow == -1 && startCol == -1 {
                     startRow = (row as i8) - 1;
                     startCol = (col as i8) - 1;
@@ -382,7 +384,7 @@ fn diagonalRowLeftToRightMatching(board: &BoardType, ma: &mut MatchingType) {
                     if row - (startRow as usize) >= 2 {
                         let mut r = startRow;
                         let mut c = startCol;
-                        while r <= row.try_into().unwrap() {
+                        while r <= (row as i8) {
                             ma[r as usize][c as usize] = true;
                             r = r + 1;
                             c = c + 1;
@@ -393,7 +395,7 @@ fn diagonalRowLeftToRightMatching(board: &BoardType, ma: &mut MatchingType) {
                 if startRow >= 0 && startCol >= 0 && row - (startRow as usize) > 2 {
                     let mut r = startRow;
                     let mut c = startCol;
-                    while r < row.try_into().unwrap() {
+                    while r < (row as i8) {
                         ma[r as usize][c as usize] = true;
                         r = r + 1;
                         c = c + 1;
@@ -457,8 +459,8 @@ fn checkCollapsed(board: &mut BoardType, ma: &mut MatchingType, mark: bool) -> b
     let rowsQty = board.len();
     let mut result = false;
 
-    for row in 1..rowsQty {
-        for col in 1..columnsQty {
+    for row in 0..rowsQty {
+        for col in 0..columnsQty {
             if ma[row][col] == true {
                 let cl = colorsToDisappear(board[row][col].to_string());
                 if mark {
@@ -473,7 +475,12 @@ fn checkCollapsed(board: &mut BoardType, ma: &mut MatchingType, mark: bool) -> b
 }
 
 #[tauri::command]
-fn matching(game: Game, level: String, mark: bool, customBoard: Option<BoardType>) -> bool {
+fn matching(
+    game: Game,
+    level: String,
+    mark: bool,
+    customBoard: Option<BoardType>
+) -> (bool, BoardType) {
     let mut board: BoardType = customBoard.unwrap_or(game.board);
     let mut ma: MatchingType = [[false; WIDTH as usize]; HEIGHT as usize];
 
@@ -486,7 +493,7 @@ fn matching(game: Game, level: String, mark: bool, customBoard: Option<BoardType
     squareMatching(&board, &mut ma);
     crossSquareMatching(&board, &mut ma);
 
-    return checkCollapsed(&mut board, &mut ma, mark);
+    return (checkCollapsed(&mut board, &mut ma, mark), board);
 }
 
 fn main() {
